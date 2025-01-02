@@ -1,0 +1,44 @@
+/* Root container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Top section container */
+.top-section-container {
+  background-color: #f0f0f0;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Content area containing left and main sections */
+.content-container {
+  display: flex;
+  height: calc(100vh - 50px); /* Subtract top section height */
+}
+
+/* Left section container */
+.left-section-container {
+  width: 150px;
+  background-color: #f4f4f4;
+  padding: 15px;
+  border-right: 1px solid #ddd;
+}
+
+/* Main section container (where BrainVisualization is shown) */
+.main-section-container {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #fff;
+}
+
+/* Styles for individual data control items */
+.data-control {
+  margin-bottom: 5px;
+}
+
+/* Styles for the controls */
+.controls div {
+  margin-bottom: 1px;
+}

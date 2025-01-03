@@ -1,0 +1,22 @@
+.top-section-container {
+  padding: 10px;
+  background-color: #ce1e1e;
+  border-radius: 16px;
+  margin-bottom: 10px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px; /* Adds spacing between the items */
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+}
+
+label, select, input[type="range"] {
+  margin-right: 10px;
+}

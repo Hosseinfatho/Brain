@@ -1,44 +1,59 @@
-/* Root container */
+/* App Styles */
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevent scrolling */
+  background-color: #f5f5f5; /* Light gray background */
 }
 
-/* Top section container */
+/* Top Section */
 .top-section-container {
-  background-color: #f0f0f0;
-  padding: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Spread out the items horizontally */
+  padding: 10px 20px;
+  background-color: #ffffff; /* White background for contrast */
+  border-bottom: 1px solid #ddd; /* Light border at the bottom */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Shadow for a clean UI */
 }
 
-/* Content area containing left and main sections */
+/* Content container (left + main sections) */
 .content-container {
   display: flex;
-  height: calc(100vh - 50px); /* Subtract top section height */
+  flex: 1; /* Take up remaining vertical space */
+  overflow: hidden; /* Prevent internal scrolling */
 }
 
-/* Left section container */
+/* Left Section */
 .left-section-container {
-  width: 150px;
-  background-color: #f4f4f4;
-  padding: 15px;
-  border-right: 1px solid #ddd;
+  width: 20%; /* Adjust as needed */
+  background-color: #ffffff; /* White background for contrast */
+  border-right: 1px solid #ddd; /* Light border to separate from main section */
+  overflow-y: auto; /* Allow scrolling within the left section if content overflows */
 }
 
-/* Main section container (where BrainVisualization is shown) */
+/* Main Section */
+/* Main Section Container */
 .main-section-container {
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #fff;
+  flex: 1; /* Take up the remaining horizontal space */
+  display: flex;
+  flex-direction: column; /* Arrange elements vertically */
+  align-items: center; /* Center horizontally */
+  justify-content: flex-start; /* Align to the top */
+  background-color: #e0e0e0; /* Light gray background */
+  overflow: hidden; /* Prevent scrolling in the main section */
+  position: relative; /* Enable absolute positioning for child elements */
 }
 
-/* Styles for individual data control items */
-.data-control {
-  margin-bottom: 5px;
+/* Brain Simulation Note */
+.brain-simulation-note {
+  position: absolute; /* Position relative to the parent container */
+  top: 10px; /* Position it near the top */
+  text-align: center; /* Center the text */
+  font-size: 1.5rem; /* Adjust font size */
+  font-weight: bold; /* Make it bold */
+  color: #333; /* Dark gray text */
+  z-index: 10; /* Ensure it stays above other elements */
 }
 
-/* Styles for the controls */
-.controls div {
-  margin-bottom: 1px;
-}

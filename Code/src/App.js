@@ -1,21 +1,18 @@
-import React from "react";
-import MainSection from "./components/MainSection"; // Import MainSection
-import LeftSection from "./components/LeftSection"; // Import LeftSection
-import TopSection from "./components/TopSection"; // Import TopSection
+import React, { useState } from "react";
+import MainSection from "./components/MainSection";
+import LeftSection from "./components/LeftSection";
+import TopSection from "./components/TopSection";
+import "./App.css"; // Assuming global styles are here
 
 function App() {
+  const [resolution, setResolution] = useState(10); // Default resolution set to 10
+
   return (
     <div className="app-container">
-      {/* Top section (row at the top) */}
-      <TopSection />
-      
-      {/* Main layout with left and main sections */}
+      <TopSection onResolutionChange={setResolution} />
       <div className="content-container">
-        {/* Left section (20% width) */}
         <LeftSection />
-        
-        {/* Main section (Brain Visualization takes up remaining space) */}
-        <MainSection />
+        <MainSection resolution={resolution} />
       </div>
     </div>
   );

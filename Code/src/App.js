@@ -5,7 +5,7 @@ import TopSection from "./components/TopSection";
 import "./App.css"; // Assuming global styles are here
 
 function App() {
-  const [resolution, setResolution] = useState(20); // Default resolution set to 10
+  const [resolution, setResolution] = useState(50); // Default resolution set to 10
 
   return (
     <div className="app-container">

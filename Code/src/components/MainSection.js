@@ -4,7 +4,8 @@ import BrainVisualization from "./BrainVisualization";
 const MainSection = ({ resolution }) => {
   return (
     <div className="main-section-container">
-      <h3 style={{ textAlign: "center" }}>Brain Simulation</h3>
+      <h3 style={{ textAlign: "center", marginBottom: "20px" }}>Brain Simulation</h3>
+      {/* Pass the resolution prop to BrainVisualization */}
       <BrainVisualization resolution={resolution} />
     </div>
   );

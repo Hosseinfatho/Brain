@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 import "./TopSection.css"; // Import CSS file for custom styles
 
-const TopSection = ({ onResolutionChange, onConnectionChange }) => {
-  const [percent, setPercent] = useState(10); // Set default percent to 10%
-
-  const handleRangeChange = (e) => {
-    const newPercent = e.target.value; // Update the state on range change
-    setPercent(newPercent);
-    onConnectionChange(newPercent); // Call the onConnectionChange prop to pass the value to the parent
+const TopSection = ({ onResolutionChange, resolution }) => {
+  const handleResolutionChange = (e) => {
+    onResolutionChange(parseInt(e.target.value, 10)); // Pass the selected resolution to the parent
   };
 
   return (
@@ -35,8 +31,8 @@ const TopSection = ({ onResolutionChange, onConnectionChange }) => {
           <label htmlFor="resolution-select">Resolution:</label>
           <select
             id="resolution-select"
-            defaultValue="50" // Set default value to 50
-            onChange={(e) => onResolutionChange(parseInt(e.target.value, 10))} // Pass the value to parent
+            value={resolution} // Ensure dropdown reflects the current resolution
+            onChange={handleResolutionChange} // Update the resolution on change
           >
             <option value="1">1</option>
             <option value="2">2</option>

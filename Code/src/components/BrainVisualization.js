@@ -5,104 +5,85 @@ import "./BrainVisualization.css";
 
 const BrainVisualization = ({ resolution = 100, initialPercent = 50 }) => {
   const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [groupedNodes, setGroupedNodes] = useState([]);
-  const [percent, setPercent] = useState(initialPercent); // State for controlling line width
+  const [inputEdges, setInputEdges] = useState([]);
+  const [outputEdges, setOutputEdges] = useState([]);
+  const [areaColors, setAreaColors] = useState({});
+  const [percent, setPercent] = useState(initialPercent);
   const canvasRef = useRef();
 
-  // Load neuron positions from a text file
-  const loadPositions = async () => {
+  // Generate a random color for each area
+  const generateAreaColors = (areas) => {
+    const colors = {};
+    areas.forEach((area, index) => {
+      colors[area] = `hsl(${(index * 137.5) % 360}, 70%, 50%)`; // Generate unique color for each area
+    });
+    return colors;
+  };
+
+  // Load neuron positions from a file
+  const loadPositions = async (currentResolution) => {
     const response = await fetch("/data/rank_0_positions.txt");
     const data = await response.text();
     const lines = data.split("\n");
 
     const loadedNodes = [];
+    const areas = new Set();
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line && !line.startsWith("#")) {
         const parts = line.split(/\s+/);
+        const id = parseInt(parts[0], 10);
         const x = parseFloat(parts[1]);
         const y = parseFloat(parts[2]);
         const z = parseFloat(parts[3]);
-        loadedNodes.push({ id: i, x, y, z });
+        const area = parts[4];
+        areas.add(area);
+        loadedNodes.push({ id, x, y, z, area });
       }
     }
-    setNodes(loadedNodes);
+
+    setNodes(loadedNodes.filter((node) => node.id % currentResolution === 0)); // Filter by resolution
+    setAreaColors(generateAreaColors([...areas]));
   };
 
-  // Load connection data (in and out) from the network files
-  const loadNetworkData = async () => {
-    const inResponse = await fetch("/data/rank_0_step_0_in_network.txt");
-    const outResponse = await fetch("/data/rank_0_step_0_out_network.txt");
+  // Load connections from a file
+  const loadConnections = async (filePath, resolution) => {
+    const response = await fetch(filePath);
+    const data = await response.text();
+    const lines = data.split("\n");
+    const connections = [];
 
-    const inData = await inResponse.text();
-    const outData = await outResponse.text();
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line && !line.startsWith("#")) {
+        const parts = line.split(/\s+/);
+        const targetId = parseInt(parts[1], 10) - 1; // Adjust for 0-indexing
+        const sourceId = parseInt(parts[3], 10) - 1; // Adjust for 0-indexing
+        const weight = parseFloat(parts[4]);
 
-    const parseNetworkData = (data) => {
-      const lines = data.split("\n");
-      const connections = [];
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line && !line.startsWith("#")) {
-          const parts = line.split(/\s+/);
-          const targetId = parseInt(parts[1], 10) - 1; // Target neuron id (adjusted for 0-indexing)
-          const sourceId = parseInt(parts[3], 10) - 1; // Source neuron id (adjusted for 0-indexing)
-          const weight = parseFloat(parts[4]); // Connection weight
+        if (targetId % resolution === 0 && sourceId % resolution === 0) {
           connections.push({ targetId, sourceId, weight });
         }
       }
-      return connections;
-    };
-
-    const inConnections = parseNetworkData(inData);
-    const outConnections = parseNetworkData(outData);
-
-    // Combine connections
-    const allConnections = [...inConnections, ...outConnections];
-    setEdges(allConnections);
-  };
-
-  // Group nodes based on resolution
-  const groupNodes = (nodes, resolution) => {
-    const grouped = [];
-    for (let i = 0; i < nodes.length; i += resolution) {
-      const group = nodes.slice(i, i + resolution);
-      const avgX = group.reduce((sum, node) => sum + node.x, 0) / group.length;
-      const avgY = group.reduce((sum, node) => sum + node.y, 0) / group.length;
-      const avgZ = group.reduce((sum, node) => sum + node.z, 0) / group.length;
-
-      grouped.push({ x: avgX, y: avgY, z: avgZ });
     }
-    setGroupedNodes(grouped);
-  };
-
-  // Filter nodes based on the resolution
-  const filterNodes = (nodes, resolution) => {
-    return nodes.filter((node) => node.id % resolution === 0); // Show neurons with ID % resolution == 0
+    return connections;
   };
 
   const getLineWidth = (weight, percent) => {
-    // Calculate line width as percent / 20 and round it to the nearest integer
-    const lineWidth = Math.round(percent / 20); // Round the result
-    return Math.max(1, lineWidth); // Minimum line width of 1
+    const baseWidth = Math.round(percent / 20);
+    return Math.max(1, baseWidth * weight); // Scale line width by weight
   };
 
-  // Handle range change for percent value
   const handleRangeChange = (event) => {
-    const newPercent = parseInt(event.target.value);
-    setPercent(newPercent); // Update state when range slider value changes
+    setPercent(parseInt(event.target.value, 10));
   };
 
   useEffect(() => {
-    loadPositions();
-    loadNetworkData();
-  }, []);
-
-  useEffect(() => {
-    groupNodes(nodes, resolution);
-  }, [nodes, resolution]);
-
-  const filteredNodes = filterNodes(nodes, resolution);
+    loadPositions(resolution);
+    loadConnections("/data/rank_0_step_0_in_network.txt", resolution).then(setInputEdges);
+    loadConnections("/data/rank_0_step_1000000_out_network.txt", resolution).then(setOutputEdges);
+  }, [resolution]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -115,32 +96,55 @@ const BrainVisualization = ({ resolution = 100, initialPercent = 50 }) => {
         <spotLight position={[10, 10, 10]} angle={0.15} intensity={1} />
 
         <group position={[-75, -75, -75]}>
-          {/* Render filtered neurons based on resolution */}
-          {filteredNodes.map((node, index) => (
-            <mesh key={index} position={[node.x, node.y, node.z]}>
+          {/* Render neurons */}
+          {nodes.map((node) => (
+            <mesh key={node.id} position={[node.x, node.y, node.z]}>
               <Sphere args={[0.5, 6, 6]}>
-                <meshStandardMaterial color="blue" />
+                <meshStandardMaterial color={areaColors[node.area] || "gray"} />
               </Sphere>
             </mesh>
           ))}
 
-          {/* Render connections only between visible neurons */}
-          {edges.map((edge, index) => {
-            const targetNode = filteredNodes.find((node) => node.id === edge.targetId);
-            const sourceNode = filteredNodes.find((node) => node.id === edge.sourceId);
+          {/* Render input connections (red) */}
+          {inputEdges.map((edge, index) => {
+            const targetNode = nodes.find((node) => node.id === edge.targetId);
+            const sourceNode = nodes.find((node) => node.id === edge.sourceId);
 
             if (targetNode && sourceNode) {
               const lineWidth = getLineWidth(edge.weight, percent);
 
               return (
                 <Line
-                  key={index}
+                  key={`in-${index}`}
                   points={[
                     [sourceNode.x, sourceNode.y, sourceNode.z],
                     [targetNode.x, targetNode.y, targetNode.z],
                   ]}
                   color="red"
-                  lineWidth={lineWidth} // Use calculated line width
+                  lineWidth={lineWidth}
+                />
+              );
+            }
+            return null;
+          })}
+
+          {/* Render output connections (green) */}
+          {outputEdges.map((edge, index) => {
+            const targetNode = nodes.find((node) => node.id === edge.targetId);
+            const sourceNode = nodes.find((node) => node.id === edge.sourceId);
+
+            if (targetNode && sourceNode) {
+              const lineWidth = getLineWidth(edge.weight, percent);
+
+              return (
+                <Line
+                  key={`out-${index}`}
+                  points={[
+                    [sourceNode.x, sourceNode.y, sourceNode.z],
+                    [targetNode.x, targetNode.y, targetNode.z],
+                  ]}
+                  color="green"
+                  lineWidth={lineWidth}
                 />
               );
             }
@@ -151,7 +155,6 @@ const BrainVisualization = ({ resolution = 100, initialPercent = 50 }) => {
         <OrbitControls enableZoom={true} />
       </Canvas>
 
-      {/* Range slider for adjusting line width (percent) */}
       <input
         type="range"
         min="0"

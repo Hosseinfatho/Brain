@@ -5,11 +5,11 @@ import TopSection from "./components/TopSection";
 import "./App.css"; // Assuming global styles are here
 
 function App() {
-  const [resolution, setResolution] = useState(50); // Default resolution set to 10
+  const [resolution, setResolution] = useState(100); // Default resolution set to 100
 
   return (
     <div className="app-container">
-      <TopSection onResolutionChange={setResolution} />
+      <TopSection resolution={resolution} onResolutionChange={setResolution} />
       <div className="content-container">
         <LeftSection />
         <MainSection resolution={resolution} />
